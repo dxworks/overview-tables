@@ -119,6 +119,7 @@ class Tables :
             workbook.close()
         }
 
+        println("Finished. Results can be found at ${overviewTablesFile.absolutePath}")
     }
 
     class CSVData(
