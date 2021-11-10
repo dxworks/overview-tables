@@ -2,20 +2,6 @@
   "name": "@dxworks/tables",
   "version": "0.1.0",
   "description": "Converts Dx overview tables csv output to excel file",
-  "main": "overview-tables.js",
-  "files": [
-    "dist"
-  ],
-  "bin": {
-    "dx-tables": "dist/overview-tables.js"
-  },
-  "preferGlobal": true,
-  "scripts": {
-    "clean": "rimraf dist/",
-    "build": "npm run clean && mkdir dist && cp lib/*.js dist && cp target/overview-tables.jar dist",
-    "local": "npm run build && npm i"
-  },
-  "repository": "git://github.com/dxworks/overview-tables.git",
   "keywords": [
     "dx",
     "overview-tables",
@@ -24,22 +10,37 @@
     "dxw",
     "plugin"
   ],
-  "author": "Mario Rivis",
-  "license": "Apache-2.0",
+  "homepage": "https://github.com/dxworks/overview-tables#readme",
   "bugs": {
     "url": "https://github.com/dxworks/overview-tables/issues"
   },
-  "homepage": "https://github.com/dxworks/overview-tables#readme",
+  "repository": "git://github.com/dxworks/overview-tables.git",
+  "license": "Apache-2.0",
+  "author": "Mario Rivis",
+  "main": "overview-tables.js",
+  "bin": {
+    "dx-tables": "dist/overview-tables.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run clean && mkdir dist && cp lib/*.js dist && cp target/overview-tables.jar dist",
+    "clean": "rimraf dist/",
+    "local": "npm run build && npm i"
+  },
   "dependencies": {
     "commander": "^8.3.0",
     "java-caller": "^2.4.0"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "public"
-  },
   "devDependencies": {
-    "rimraf": "^3.0.2"
+    "json": "^11.0.0",
+    "rimraf": "^3.0.2",
+    "sort-package-json": "^1.52.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "dxw": {
     "commands": [
