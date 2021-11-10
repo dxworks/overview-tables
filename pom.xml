@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dxworks</groupId>
-    <artifactId>chronos-studio</artifactId>
+    <artifactId>overview-tables</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
     <properties>
@@ -13,8 +13,8 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <kotlin.version>1.4.31</kotlin.version>
-        <main.class>org.dxworks.studio.StudioKt</main.class>
-        <jar.final.name>chronos-studio</jar.final.name>
+        <main.class>org.dxworks.overviewtables.MainKt</main.class>
+        <jar.final.name>overview-tables</jar.final.name>
     </properties>
 
     <dependencies>

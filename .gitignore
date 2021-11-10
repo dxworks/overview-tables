@@ -3,5 +3,4 @@ target/
 *.iml
 ~*
 node_modules
-jdeploy-bundle
-jdeploy.js
+dist

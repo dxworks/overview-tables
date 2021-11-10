@@ -1,33 +1,52 @@
 {
-  "bin": {
-    "chronos-studio": "jdeploy-bundle/jdeploy.js"
-  },
-  "author": "dxworks",
-  "description": "A CLI tool to configure automate the Chronos Analysis process",
-  "main": "index.js",
-  "preferGlobal": true,
-  "repository": "git://github.com/dxworks/chronos-studio.git",
+  "name": "@dxworks/tables",
   "version": "0.1.0",
-  "jdeploy": {
-    "jar": "target/chronos-studio.jar"
-  },
-  "dependencies": {
-    "shelljs": "0.8.4"
-  },
-  "license": "Apache-2.0",
-  "name": "@dxworks/chronos-studio",
+  "description": "Converts Dx overview tables csv output to excel file",
+  "main": "overview-tables.js",
   "files": [
-    "jdeploy-bundle"
+    "dist"
   ],
-  "scripts": {
-    "package": "jdeploy package",
-    "jdeploy-install": "jdeploy install",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "bin": {
+    "dx-tables": "dist/overview-tables.js"
   },
-  "devDependencies": {
-    "jdeploy": "^1.0.22"
+  "preferGlobal": true,
+  "scripts": {
+    "clean": "rimraf dist/",
+    "build": "npm run clean && mkdir dist && cp lib/*.js dist && cp target/overview-tables.jar dist",
+    "local": "npm run build && npm i"
+  },
+  "repository": "git://github.com/dxworks/overview-tables.git",
+  "keywords": [
+    "dx",
+    "overview-tables",
+    "overview",
+    "tables",
+    "dxw",
+    "plugin"
+  ],
+  "author": "Mario Rivis",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dxworks/overview-tables/issues"
+  },
+  "homepage": "https://github.com/dxworks/overview-tables#readme",
+  "dependencies": {
+    "commander": "^8.3.0",
+    "java-caller": "^2.4.0"
   },
   "publishConfig": {
-    "registry":"https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2"
+  },
+  "dxw": {
+    "commands": [
+      {
+        "file": "dist/index.js",
+        "command": "tablesCommand"
+      }
+    ]
   }
 }

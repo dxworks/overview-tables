@@ -1,4 +1,4 @@
-package org.dxworks.studio.ot
+package org.dxworks.overviewtables
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -7,16 +7,18 @@ import com.opencsv.CSVReader
 import org.apache.poi.openxml4j.util.ZipSecureFile
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType
-import org.apache.poi.xslf.usermodel.XMLSlideShow
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import org.dxworks.studio.writeDefaultConfigFile
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.nio.file.Paths
 import java.util.*
 
 class Tables :
-    CliktCommand(help = "Converts overview tables csv output to excel file, which will be created in \${dx-folder}/presentation/Overview-Tables.xslx") {
+    CliktCommand(
+        name = "dx-tables",
+        help = "Converts overview tables csv output to excel file, which will be created in \${dx-folder}/presentation/Overview-Tables.xslx"
+    ) {
 
     val folderParam by argument(
         "dx-folder",
@@ -37,22 +39,25 @@ class Tables :
         val presentationFolder = folder.resolve("presentation")
         presentationFolder.mkdirs()
 
-        val overviewTablesFile = presentationFolder.resolve("${dxProjName.capitalize()}-Overview-Tables.xlsx")
-        writeDefaultConfigFile("tables/Generic-Overview-Tables.xlsx", overviewTablesFile)
+        val genericResourcesLocation = Paths.get(System.getProperty("user.home"), ".dxw", "tables").toFile()
+        genericResourcesLocation.mkdirs()
 
+
+        val genericOverviewTablesFile = genericResourcesLocation.resolve("Generic-Overview-Tables.xlsx")
+        val overviewTablesFile = presentationFolder.resolve("${dxProjName.capitalize()}-Overview-Tables.xlsx")
+        if (!genericOverviewTablesFile.exists()) {
+            writeDefaultConfigFile("Generic-Overview-Tables.xlsx", genericOverviewTablesFile)
+        }
+        overviewTablesFile.writeBytes(genericOverviewTablesFile.readBytes())
+
+        val genericOverviewSlidesFile = genericResourcesLocation.resolve("Generic-Overview-Slides.pptx")
         val overviewSlidesFile = presentationFolder.resolve("${dxProjName.capitalize()}-Overview-Slides.pptx")
-        writeDefaultConfigFile("tables/Generic-Overview-Slides.pptx", overviewSlidesFile)
+        if (!genericOverviewSlidesFile.exists()) {
+            writeDefaultConfigFile("Generic-Overview-Slides.pptx", genericOverviewSlidesFile)
+        }
+        overviewSlidesFile.writeBytes(genericOverviewSlidesFile.readBytes())
 
         ZipSecureFile.setMinInflateRatio(0.0)
-
-        val slides: XMLSlideShow =
-            FileInputStream(overviewSlidesFile).use {
-                val slides = XMLSlideShow(it)
-
-
-
-                slides
-            }
 
         val workbook =
             FileInputStream(overviewTablesFile).use {
@@ -62,8 +67,7 @@ class Tables :
                     val csvData: CSVData = CSVReader(file.reader()).use { reader ->
                         val allCsvLines = reader.readAll()
                         val recentDate = allCsvLines.mapNotNull { row ->
-                            Regex("\\d{4}-\\d{2}").find(row.find { cell -> cell.contains("recent refers to") }
-                                .orEmpty())?.value
+                            row.find { cell -> cell.contains("recent refers to") }?.substringAfter("since ")
                         }.firstOrNull()
                         val dataRows = allCsvLines.dropWhile { strings -> strings[0].toIntOrNull() == null }
                             .associate { strings -> strings[0].toInt() to strings.toList() }.toSortedMap()
@@ -87,9 +91,10 @@ class Tables :
                                 )
                             }
 
-                        val dataRows = sheet.dropWhile { row -> row.first().numericCellValue != 1.0 }
-                            .associateBy { row -> row.first().numericCellValue.toInt() }
-                            .toSortedMap()
+                        val dataRows =
+                            sheet.dropWhile { row -> row.count() == 0 || row.first().cellType != CellType.NUMERIC || row.first().numericCellValue != 1.0 }
+                                .associateBy { row -> row.first().numericCellValue.toInt() }
+                                .toSortedMap()
 
                         dataRows.forEach { (index, row) ->
                             val dataFromCSV = csvData.dataRows[index]
@@ -120,6 +125,7 @@ class Tables :
         }
 
         println("Finished. Results can be found at ${overviewTablesFile.absolutePath}")
+        println("If you want to modify the generic template files they can be found at ${genericResourcesLocation.absolutePath}")
     }
 
     class CSVData(
