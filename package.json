@@ -17,9 +17,10 @@
   "repository": "git://github.com/dxworks/overview-tables.git",
   "license": "Apache-2.0",
   "author": "Mario Rivis",
-  "main": "overview-tables.js",
+  "main": "index.js",
   "bin": {
-    "dx-tables": "dist/overview-tables.js"
+    "dx-tables": "dist/tables.js",
+    "dx-table-pics": "dist/tablepics.js"
   },
   "files": [
     "dist"
@@ -30,8 +31,13 @@
     "local": "npm run build && npm i"
   },
   "dependencies": {
+    "chalk": "^4.1.2",
+    "cli-progress": "^3.10.0",
     "commander": "^8.3.0",
-    "java-caller": "^2.4.0"
+    "inquirer": "^8.2.1",
+    "java-caller": "^2.4.0",
+    "node-html-parser": "^5.2.0",
+    "puppeteer": "^13.5.1"
   },
   "devDependencies": {
     "json": "^11.0.0",
@@ -47,6 +53,10 @@
       {
         "file": "dist/index.js",
         "command": "tablesCommand"
+      },
+      {
+        "file": "dist/index.js",
+        "command": "tablePicsCommand"
       }
     ]
   }

@@ -20,18 +20,17 @@ class Tables :
         help = "Converts overview tables csv output to excel file, which will be created in \${dx-folder}/presentation/Overview-Tables.xslx"
     ) {
 
-    val folderParam by argument(
+    private val folderParam by argument(
         "dx-folder",
         help = "The dx home folder (containing settings.txt file)"
     ).default(".")
 
     override fun run() {
-        val folder = File(folderParam)
+        val folder = File(folderParam).normalize()
         val dxProjName = folder.name
         println("Project at ${folder.normalize().absolutePath}")
-        if (!folder.resolve("settings.txt")
-                .exists()
-        ) error("${folder.normalize().absolutePath} is not a dx home folder!")
+        if (!folder.resolve("settings.txt").exists())
+            error("${folder.normalize().absolutePath} is not a dx home folder!")
         val overviewTablesOutput = folder.resolve("+dx-results/overview")
         if (!overviewTablesOutput.exists())
             error("Overview tables output folder ($overviewTablesOutput) does not exist. Please run dx first to create them.")
@@ -63,14 +62,14 @@ class Tables :
             FileInputStream(overviewTablesFile).use {
                 val workbook = XSSFWorkbook(it)
 
-                overviewTablesOutput.listFiles().forEach { file ->
+                overviewTablesOutput.listFiles()?.forEach { file ->
                     val csvData: CSVData = CSVReader(file.reader()).use { reader ->
                         val allCsvLines = reader.readAll()
                         val recentDate = allCsvLines.mapNotNull { row ->
                             row.find { cell -> cell.contains("recent refers to") }?.substringAfter("since ")
                         }.firstOrNull()
                         val dataRows = allCsvLines.dropWhile { strings -> strings[0].toIntOrNull() == null }
-                            .associate { strings -> strings[0].toInt() to strings.toList() }.toSortedMap()
+                            .associate { strings -> strings[0].toInt() to strings.drop(1).toList() }.toSortedMap()
 
                         CSVData(recentDate, dataRows)
                     }
@@ -92,8 +91,9 @@ class Tables :
                             }
 
                         val dataRows =
-                            sheet.dropWhile { row -> row.count() == 0 || row.first().cellType != CellType.NUMERIC || row.first().numericCellValue != 1.0 }
-                                .associateBy { row -> row.first().numericCellValue.toInt() }
+                            sheet.dropWhile { row -> row.count() == 0 || !row.first().stringCellValue.startsWith("spring") }
+                                .withIndex()
+                                .associate { indexedValue -> (indexedValue.index + 1) to indexedValue.value}
                                 .toSortedMap()
 
                         dataRows.forEach { (index, row) ->
