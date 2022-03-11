@@ -27,7 +27,7 @@ class Tables :
 
     override fun run() {
         val folder = File(folderParam).normalize()
-        val dxProjName = folder.name
+        val dxProjName = folder.absoluteFile.name
         println("Project at ${folder.normalize().absolutePath}")
         if (!folder.resolve("settings.txt").exists())
             error("${folder.normalize().absolutePath} is not a dx home folder!")
