@@ -62,60 +62,62 @@ class Tables :
             FileInputStream(overviewTablesFile).use {
                 val workbook = XSSFWorkbook(it)
 
-                overviewTablesOutput.listFiles()?.forEach { file ->
-                    val csvData: CSVData = CSVReader(file.reader()).use { reader ->
-                        val allCsvLines = reader.readAll()
-                        val recentDate = allCsvLines.mapNotNull { row ->
-                            row.find { cell -> cell.contains("recent refers to") }?.substringAfter("since ")
-                        }.firstOrNull()
-                        val dataRows = allCsvLines.dropWhile { strings -> strings[0].toIntOrNull() == null }
-                            .associate { strings -> strings[0].toInt() to strings.drop(1).toList() }.toSortedMap()
+                overviewTablesOutput.listFiles()
+                    ?.filter { f -> f.isFile && f.name.endsWith(".csv")}
+                    ?.forEach { file ->
+                        val csvData: CSVData = CSVReader(file.reader()).use { reader ->
+                            val allCsvLines = reader.readAll()
+                            val recentDate = allCsvLines.mapNotNull { row ->
+                                row.find { cell -> cell.contains("recent refers to") }?.substringAfter("since ")
+                            }.firstOrNull()
+                            val dataRows = allCsvLines.dropWhile { strings -> strings[0].toIntOrNull() == null }
+                                .associate { strings -> strings[0].toInt() to strings.drop(1).toList() }.toSortedMap()
 
-                        CSVData(recentDate, dataRows)
-                    }
+                            CSVData(recentDate, dataRows)
+                        }
 
-                    workbook.getSheet(file.name.removeSuffix(".csv"))?.let { sheet ->
-                        sheet.take(5)
-                            .flatMap { row ->
-                                row.filter { cell ->
-                                    cell.cellType == CellType.STRING &&
-                                            cell.stringCellValue.contains("\$recentDate")
-                                }
-                            }
-                            .forEach { cell ->
-                                cell.setCellValue(
-                                    cell.stringCellValue.replace(
-                                        "\$recentDate", csvData.recentDate.orEmpty()
-                                    )
-                                )
-                            }
-
-                        val dataRows =
-                            sheet.dropWhile { row -> row.count() == 0 || !row.first().stringCellValue.startsWith("spring") }
-                                .withIndex()
-                                .associate { indexedValue -> (indexedValue.index + 1) to indexedValue.value}
-                                .toSortedMap()
-
-                        dataRows.forEach { (index, row) ->
-                            val dataFromCSV = csvData.dataRows[index]
-                            when {
-                                dataFromCSV == null -> sheet.removeRow(row)
-                                dataFromCSV.size == 1 -> row.drop(1).forEach(Cell::setBlank)
-                                else -> {
-                                    dataFromCSV.forEachIndexed { colIndex, value ->
-                                        val cell = row.getCell(colIndex)
-                                        try {
-                                            cell.setCellValue(value.toDouble())
-                                        } catch (e: NumberFormatException) {
-                                            cell.setCellValue(value)
-                                        }
+                        workbook.getSheet(file.name.removeSuffix(".csv"))?.let { sheet ->
+                            sheet.take(5)
+                                .flatMap { row ->
+                                    row.filter { cell ->
+                                        cell.cellType == CellType.STRING &&
+                                                cell.stringCellValue.contains("\$recentDate")
                                     }
-                                    row.drop(dataFromCSV.size).forEach(Cell::setBlank)
+                                }
+                                .forEach { cell ->
+                                    cell.setCellValue(
+                                        cell.stringCellValue.replace(
+                                            "\$recentDate", csvData.recentDate.orEmpty()
+                                        )
+                                    )
+                                }
+
+                            val dataRows =
+                                sheet.dropWhile { row -> row.count() == 0 || !row.first().stringCellValue.startsWith("spring") }
+                                    .withIndex()
+                                    .associate { indexedValue -> (indexedValue.index + 1) to indexedValue.value }
+                                    .toSortedMap()
+
+                            dataRows.forEach { (index, row) ->
+                                val dataFromCSV = csvData.dataRows[index]
+                                when {
+                                    dataFromCSV == null -> sheet.removeRow(row)
+                                    dataFromCSV.size == 1 -> row.drop(1).forEach(Cell::setBlank)
+                                    else -> {
+                                        dataFromCSV.forEachIndexed { colIndex, value ->
+                                            val cell = row.getCell(colIndex)
+                                            try {
+                                                cell.setCellValue(value.toDouble())
+                                            } catch (e: NumberFormatException) {
+                                                cell.setCellValue(value)
+                                            }
+                                        }
+                                        row.drop(dataFromCSV.size).forEach(Cell::setBlank)
+                                    }
                                 }
                             }
                         }
                     }
-                }
                 workbook
             }
 
