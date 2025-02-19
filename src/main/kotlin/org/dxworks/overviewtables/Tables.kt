@@ -49,13 +49,6 @@ class Tables :
         }
         overviewTablesFile.writeBytes(genericOverviewTablesFile.readBytes())
 
-        val genericOverviewSlidesFile = genericResourcesLocation.resolve("Generic-Overview-Slides.pptx")
-        val overviewSlidesFile = presentationFolder.resolve("${dxProjName.capitalize()}-Overview-Slides.pptx")
-        if (!genericOverviewSlidesFile.exists()) {
-            writeDefaultConfigFile("Generic-Overview-Slides.pptx", genericOverviewSlidesFile)
-        }
-        overviewSlidesFile.writeBytes(genericOverviewSlidesFile.readBytes())
-
         ZipSecureFile.setMinInflateRatio(0.0)
 
         val workbook =
