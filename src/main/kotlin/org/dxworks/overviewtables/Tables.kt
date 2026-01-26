@@ -1,6 +1,7 @@
 package org.dxworks.overviewtables
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.opencsv.CSVReader
@@ -14,11 +15,10 @@ import java.io.FileOutputStream
 import java.nio.file.Paths
 import java.util.*
 
-class Tables :
-    CliktCommand(
-        name = "dx-tables",
-        help = "Converts overview tables csv output to excel file, which will be created in \${dx-folder}/presentation/Overview-Tables.xslx"
-    ) {
+class Tables : CliktCommand(name = "dx-tables") {
+
+    override fun help(context: Context): String =
+        "Converts overview tables csv output to excel file, which will be created in \${dx-folder}/presentation/Overview-Tables.xslx"
 
     private val folderParam by argument(
         "dx-folder",
