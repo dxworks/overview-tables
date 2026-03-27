@@ -37,7 +37,7 @@
     "inquirer": "^8.2.1",
     "java-caller": "^2.4.0",
     "node-html-parser": "^5.2.0",
-    "puppeteer": "^13.5.1"
+    "puppeteer": "^22.11.2"
   },
   "devDependencies": {
     "json": "^11.0.0",
