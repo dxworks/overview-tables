@@ -43,7 +43,10 @@ class Tables :
 
 
         val genericOverviewTablesFile = genericResourcesLocation.resolve("Generic-Overview-Tables.xlsx")
-        val overviewTablesFile = presentationFolder.resolve("${dxProjName.capitalize()}-Overview-Tables.xlsx")
+        val capitalizedProjName = dxProjName.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+        }
+        val overviewTablesFile = presentationFolder.resolve("$capitalizedProjName-Overview-Tables.xlsx")
         if (!genericOverviewTablesFile.exists()) {
             writeDefaultConfigFile("Generic-Overview-Tables.xlsx", genericOverviewTablesFile)
         }
