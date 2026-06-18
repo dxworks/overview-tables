@@ -1,0 +1,26 @@
+name: Trivy Daily Scan
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Copied from dxworks/pipelines trivy-daily-scan.yml (without SARIF upload — requires Advanced Security)
+jobs:
+  trivy-fs-scan:
+    name: Daily Filesystem Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          exit-code: 0
+          severity: MEDIUM,HIGH,CRITICAL
+          skip-dirs: 'node_modules,dist,target'
