@@ -7,8 +7,12 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
-# Copied from dxworks/pipelines trivy-daily-scan.yml (without SARIF upload — requires Advanced Security)
+# Inlined rather than the shared dxworks/pipelines workflow so we can prime the
+# local Maven cache first: Trivy resolves pom.xml against Maven Central, which
+# rate-limits (HTTP 429) shared CI IPs. Report-only (does not fail); SARIF is
+# uploaded to the Security tab.
 jobs:
   trivy-fs-scan:
     name: Daily Filesystem Scan
@@ -16,8 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # Prime ~/.m2 so Trivy resolves the Maven tree from the local cache instead
-      # of hammering Maven Central, which rate-limits (HTTP 429) shared CI IPs.
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
@@ -27,7 +29,7 @@ jobs:
       - name: Prime local Maven repository
         run: mvn -B -q dependency:go-offline
 
-      - name: Run Trivy filesystem scan
+      - name: Run Trivy filesystem scan (table)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
@@ -36,3 +38,21 @@ jobs:
           exit-code: 0
           severity: MEDIUM,HIGH,CRITICAL
           skip-dirs: 'node_modules,dist,target'
+
+      - name: Run Trivy filesystem scan (sarif)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-fs-results.sarif
+          exit-code: 0
+          severity: MEDIUM,HIGH,CRITICAL
+          skip-dirs: 'node_modules,dist,target'
+
+      - name: Upload results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: trivy-fs-results.sarif
+          category: trivy-fs

@@ -24,42 +24,20 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-  # ── Gate (from dxworks/pipelines release-gate.yml, with Java for the jar build) ──
+  # ── Gate (shared dxworks/pipelines workflow, like insider/dude) ──────────────
+  # Sets up Java + Node, runs ./scripts/build.sh (which builds the Maven jar and
+  # populates ~/.m2 before Trivy scans, so the pom scan resolves offline — no 429).
   gate:
-    name: Quality Gate
-    runs-on: ubuntu-latest
     needs: [parse-tag]
-    steps:
-      - uses: actions/checkout@v6
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'maven'
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'npm'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@dxworks'
-      - name: Build (Maven jar + npm package)
-        run: |
-          chmod +x ./scripts/build.sh
-          ./scripts/build.sh
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUPPETEER_SKIP_DOWNLOAD: 'true'
-      - name: Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: table
-          exit-code: 1
-          severity: HIGH,CRITICAL
-          skip-dirs: 'node_modules,dist,target'
+    uses: dxworks/pipelines/.github/workflows/release-gate.yml@v1
+    with:
+      java-version: '21'
+      node-version: '24'
+      build-script: ./scripts/build.sh
+      trivy-severity: HIGH,CRITICAL
+    permissions:
+      contents: read
+      security-events: write
 
   # ── NPM (shared dxworks/pipelines workflow — OIDC Trusted Publishing, no token) ──
   # Same mechanism as insider/dude: publishes to GitHub Packages with the built-in
