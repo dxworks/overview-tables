@@ -14,6 +14,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
+      # Prime ~/.m2 so Trivy resolves the Maven tree from the local cache instead
+      # of hammering Maven Central, which rate-limits (HTTP 429) shared CI IPs.
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Prime local Maven repository
+        run: mvn -B -q dependency:go-offline
+
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
         with:
