@@ -19,7 +19,7 @@
         <!-- Library versions (kept current and free of known CVEs) -->
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.34</logback.version>
-        <jackson.version>2.22.0</jackson.version>
+        <jackson.version>2.22.3</jackson.version>
         <poi.version>5.4.1</poi.version>
         <opencsv.version>5.10</opencsv.version>
         <commons-io.version>2.18.0</commons-io.version>
